@@ -1,186 +1,70 @@
 // routes/cartelera.routes.js
-
-const express = require('express');
-const router = express.Router();
-const carteleraController = require('../controllers/cartelera.controller');
-
-/**
- * @swagger
- * tags:
- *   - name: Cartelera
- *     description: Endpoints para gestionar la cartelera de películas
- */
+const { Router } = require('express');
+const c = require('../controllers/cartelera.controller');
+const router = Router();
 
 /**
- * @swagger
- * /cartelera:
+ * @openapi
+ * /api/cartelera:
  *   get:
- *     summary: Retorna una lista de todas las películas en cartelera
- *     tags: [Cartelera]
+ *     summary: Listar cartelera
  *     responses:
- *       '200':
- *         description: Lista de películas obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Pelicula'
- *   post:
- *     summary: Crea una nueva película en la cartelera
- *     tags: [Cartelera]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PeliculaInput'
- *     responses:
- *       '201':
- *         description: Película creada exitosamente
- *       '400':
- *         description: Datos de entrada inválidos
+ *       200:
+ *         description: Lista de películas
  */
-router.route('/')
-  .get(carteleraController.getPeliculas)
-  .post(carteleraController.createPelicula);
+router.get('/', c.getAll);
 
 /**
- * @swagger
- * /cartelera/{imdbID}:
+ * @openapi
+ * /api/cartelera/insert:
  *   get:
- *     summary: Retorna una película por su imdbID
- *     tags: [Cartelera]
+ *     summary: Insertar película (GET)
  *     parameters:
- *       - in: path
+ *       - in: query
  *         name: imdbID
- *         schema:
- *           type: string
  *         required: true
- *         description: El ID de IMDB de la película
- *     responses:
- *       '200':
- *         description: Película encontrada
- *       '404':
- *         description: Película no encontrada
- *   put:
- *     summary: Actualiza una película existente por su imdbID
- *     tags: [Cartelera]
- *     parameters:
- *       - in: path
- *         name: imdbID
- *         schema:
- *           type: string
+ *         schema: { type: string }
+ *       - in: query
+ *         name: Title
  *         required: true
- *         description: El ID de IMDB de la película a actualizar
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PeliculaInput'
- *     responses:
- *       '200':
- *         description: Película actualizada exitosamente
- *       '404':
- *         description: Película no encontrada
- *   delete:
- *     summary: Elimina una película por su imdbID
- *     tags: [Cartelera]
- *     parameters:
- *       - in: path
- *         name: imdbID
- *         schema:
- *           type: string
+ *         schema: { type: string }
+ *       - in: query
+ *         name: Year
  *         required: true
- *         description: El ID de IMDB de la película a eliminar
+ *         schema: { type: string }
+ *       - in: query
+ *         name: Type
+ *         required: true
+ *         schema: { type: string }
+ *       - in: query
+ *         name: Poster
+ *         schema: { type: string }
+ *       - in: query
+ *         name: Estado
+ *         required: true
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: description
+ *         schema: { type: string }
+ *       - in: query
+ *         name: Ubication
+ *         schema: { type: string }
  *     responses:
- *       '200':
- *         description: Película eliminada exitosamente
- *       '404':
- *         description: Película no encontrada
+ *       200:
+ *         description: Registro Insertado
  */
-router.route('/:imdbID')
-  .get(carteleraController.getPeliculaById)
-  .put(carteleraController.updatePelicula)
-  .delete(carteleraController.deletePelicula);
+router.get('/insert', c.insertOne);
 
 /**
- * @swagger
- * /cartelera/bulk:
- *   post:
- *     summary: Crea múltiples películas a la vez (carga masiva)
- *     tags: [Cartelera]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: array
- *             items:
- *               $ref: '#/components/schemas/PeliculaInput'
+ * @openapi
+ * /api/cartelera/update:
+ *   get:
+ *     summary: Actualizar película (GET)
+ *     parameters: [ { in: query, name: imdbID, required: true, schema: {type: string} } ]
  *     responses:
- *       '201':
- *         description: Películas creadas exitosamente
- *
- * components:
- *   schemas:
- *     Pelicula:
- *       type: object
- *       properties:
- *         imdbID:
- *           type: string
- *           description: ID único de IMDB.
- *         Title:
- *           type: string
- *           description: Título de la película.
- *         Year:
- *           type: string
- *           description: Año de lanzamiento.
- *         Type:
- *           type: string
- *           description: Género de la película.
- *         Poster:
- *           type: string
- *           description: URL del póster de la película.
- *         Estado:
- *           type: boolean
- *           description: Si la película está activa en cartelera.
- *         description:
- *           type: string
- *           description: Sinopsis de la película.
- *         Ubication:
- *           type: string
- *           description: Cine o plataforma donde se exhibe.
- *     PeliculaInput:
- *       type: object
- *       properties:
- *         imdbID:
- *           type: string
- *         Title:
- *           type: string
- *         Year:
- *           type: string
- *         Type:
- *           type: string
- *         Poster:
- *           type: string
- *         Estado:
- *           type: boolean
- *         description:
- *           type: string
- *         Ubication:
- *           type: string
- *       example:
- *         imdbID: "tt0111161"
- *         Title: "Titanes del Atlantico"
- *         Year: "2013"
- *         Type: "Ciencia Ficcion"
- *         Poster: "https://demo/demoimages.png"
- *         Estado: true
- *         description: "La humanidad se transforma en robots gigantes para defender la costa este de los monstruos que surgen del fondo del mar."
- *         Ubication: "POPCINEMA"
+ *       200:
+ *         description: Registro Actualizado
  */
-router.post('/bulk', carteleraController.createBulkPeliculas);
+router.get('/update', c.updateOne);
 
 module.exports = router;
